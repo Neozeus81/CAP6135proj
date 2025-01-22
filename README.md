@@ -1,2 +1,2 @@
-# CAD6135proj
+# CAP6135proj
 RNN network research
