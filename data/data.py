@@ -6,29 +6,20 @@ from sklearn.preprocessing import MinMaxScaler
 from sklearn.compose import ColumnTransformer
 
 
-load_dotenv()
+class data: 
+    def __init__(self, name, columns):
+        load_dotenv("../.env")
+        traindf = pd.DataFrame(arff.loadarff(os.getenv(name))[0])
+        encoded = pd.get_dummies(traindf, columns=columns)
+        num_cols = encoded.select_dtypes(include='number').columns
+        ct = ColumnTransformer([('scaler', MinMaxScaler(), num_cols)], remainder='passthrough')
+        norm_data = ct.fit_transform(encoded)
+        self.data = pd.DataFrame(norm_data, columns=encoded.columns)
 
-KDD_TRAIN = os.getenv("KDD_TRAIN")
-KDD_TEST_PLUS = os.getenv("KDD_TEST_PLUS")
+    def print_data(self):
+        print(self.data)
 
-traindf = pd.DataFrame(arff.loadarff(KDD_TRAIN)[0])
-print(traindf)
-print(traindf.columns.tolist())
-
-encoddf= pd.get_dummies(traindf, columns=['protocol_type', 'service', 'flag'])
-
-print(encoddf)
-
-numerical_cols = encoddf.select_dtypes(include='number').columns
-print(numerical_cols)
-ct = ColumnTransformer([('scaler', MinMaxScaler(), numerical_cols)], remainder='passthrough')
-
-# Fit and transform the data
-df_normalized = ct.fit_transform(encoddf)
-
-# Convert the result back to a DataFrame
-df_normalized = pd.DataFrame(df_normalized, columns=encoddf.columns)
-
-print(df_normalized)
-
-
+""" example usage
+myData = data("KDD_TRAIN", ['protocol_type', 'service', 'flag'])
+myData.print_data()
+"""
