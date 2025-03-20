@@ -4,22 +4,54 @@ import pandas as pd
 from scipy.io import arff
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.compose import ColumnTransformer
+from sklearn.metrics import accuracy_score, max_error
 
+# differe types of attacks and their labels
+dos = ['apache2','back','land','neptune','mailbomb','pod','processtable','smurf','teardrop','udpstorm','worm']
+r2l = ['ftp_write','guess_passwd','http_tunnel','imap','multihop','named','phf','sendmail','snmpgetattack','snmpguess','spy','warezclient','warezmaster','xclock','xsnoop']
+u2r = ['buffer_overflow','loadmodule','perl','ps','rootkit','sqlattack','xterm']
+probe = ['ipsweep','mscan','nmap','portsweep','saint','satan']
 
-class data: 
+col_names = ['duration','protocol_type','service','flag','src_bytes','dst_bytes','land','wrong_fragment','urgent','hot','num_failed_logins','logged_in','num_compromised','root_shell','su_attempted','num_root','num_file_creations','num_shells','num_access_files','num_outbound_cmds','is_host_login','is_guest_login','count','srv_count','serror_rate','srv_serror_rate','rerror_rate','srv_rerror_rate','same_srv_rate','diff_srv_rate','srv_diff_host_rate','dst_host_count','dst_host_srv_count','dst_host_same_srv_rate','dst_host_diff_srv_rate','dst_host_same_src_port_rate','dst_host_srv_diff_host_rate','dst_host_serror_rate','dst_host_srv_serror_rate','dst_host_rerror_rate','dst_host_srv_rerror_rate','attack','level']
+
+def map(attack):
+    atype = 0
+    if attack in dos:
+        atype = 1
+    if attack in r2l:
+        atype = 2
+    if attack in u2r:
+        atype = 3
+    if attack in probe:
+        atype = 4
+    return atype
+def map_binary(attack):
+    value = 0
+    if attack in r2l or attack in dos or attack in u2r or attack in probe:
+        value = 1
+    return value
+
+class Data: 
     def __init__(self, name, columns):
         load_dotenv("../.env")
-        traindf = pd.DataFrame(arff.loadarff(os.getenv(name))[0])
-        encoded = pd.get_dummies(traindf, columns=columns)
-        num_cols = encoded.select_dtypes(include='number').columns
-        ct = ColumnTransformer([('scaler', MinMaxScaler(), num_cols)], remainder='passthrough')
-        norm_data = ct.fit_transform(encoded)
-        self.data = pd.DataFrame(norm_data, columns=encoded.columns)
+        df = pd.read_csv(os.getenv(name))
+        df.columns = col_names
+        atype = df.attack.apply(map)
+        btype = df.attack.apply(map_binary)
+        df['atype'] = atype
+        df['btype'] = btype
+        encode = pd.get_dummies(df, columns=columns)
+        print(encode)
+        self.data = encode
 
     def print_data(self):
         print(self.data)
+
+    def get_accuracy():
+        return 1
 
 """ example usage
 myData = data("KDD_TRAIN", ['protocol_type', 'service', 'flag'])
 myData.print_data()
 """
+
