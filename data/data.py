@@ -25,6 +25,7 @@ def map(attack):
     if attack in probe:
         atype = 4
     return atype
+
 def map_binary(attack):
     value = 0
     if attack in r2l or attack in dos or attack in u2r or attack in probe:
@@ -41,8 +42,16 @@ class Data:
         df['atype'] = atype
         df['btype'] = btype
         encode = pd.get_dummies(df, columns=columns)
-        print(encode)
         self.data = encode
+
+    def get_train_data(self):
+        return self.data.drop(columns=['attack', 'level', 'atype', 'btype'], axis=1)
+
+    def get_label_data(self, isBinary):
+        if isBinary:
+            return self.data['btype']
+        else:
+            return self.data['atype']
 
     def print_data(self):
         print(self.data)
