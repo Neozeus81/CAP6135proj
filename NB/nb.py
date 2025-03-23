@@ -1,6 +1,6 @@
 import sys
 import os
-from sklearn.neural_network import MLPClassifier, MLPRegressor
+from sklearn.naive_bayes import GaussianNB, BernoulliNB, CatergoricalNB, ComplementNB, MultinominalNB
 from sklearn.metrics import accuracy_score
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -11,9 +11,24 @@ sys.path.append(file_dir)
 
 from data import Data
 
-class myMLP:
-    def __init__(self, x, y, act, epochs):
-        self.model = MLPClassifier(hidden_layer_sizes=(x,y), activation=act, solver='adam', max_iter=epochs, random_state=42)
+types = ["GaussianNB", "BernoulliNB", "CatergoricalNB", "ComplementNB", "MultinomialNB"]
+
+class myNB:
+    def __init__(self, what_type):
+        if what_type in types:
+            match what_type:
+                case types[0]:
+                    self.model = GaussianNB()
+                case types[1]:
+                    self.model = BernoulliNB()
+                case types[2]:
+                    self.model = CatergoicalNB()
+                case types[3]:
+                    self.model = ComplementNB()
+                case types[4]:
+                    self.model = MultinominalNB()
+        else:
+            print("Invalid type value")
 
     def train(self, trainData, trainLabels):
         self.model.fit(trainData, trainLabels)

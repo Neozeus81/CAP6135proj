@@ -11,7 +11,7 @@ sys.path.append(file_dir)
 
 from data import Data
 
-class myMLP:
+class mySVM:
     def __init__(self, x, y, act, epochs):
         self.model = MLPClassifier(hidden_layer_sizes=(x,y), activation=act, solver='adam', max_iter=epochs, random_state=42)
 
