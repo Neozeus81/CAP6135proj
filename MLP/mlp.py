@@ -12,8 +12,8 @@ sys.path.append(file_dir)
 from data import Data
 
 class myMLP:
-    def __init__(self, x, y, act, epochs):
-        self.model = MLPClassifier(hidden_layer_sizes=(x,y), activation=act, solver='adam', max_iter=epochs, random_state=42)
+    def __init__(self, x, act, learn, epochs):
+        self.model = MLPClassifier(hidden_layer_sizes=(x,), activation=act, solver='adam', learning_rate_init=learn, max_iter=epochs, random_state=42)
 
     def train(self, trainData, trainLabels):
         self.model.fit(trainData, trainLabels)

@@ -15,17 +15,18 @@ types = ["GaussianNB", "BernoulliNB", "CatergoricalNB", "ComplementNB", "Multino
 
 class myNB:
     def __init__(self, what_type):
-        if what_type in types:
+        self.types = ["GaussianNB", "BernoulliNB", "CatergoricalNB", "ComplementNB", "MultinomialNB"]
+        if what_type in self.types:
             match what_type:
-                case types[0]:
+                case self.types[0]:
                     self.model = GaussianNB()
-                case types[1]:
+                case self.types[1]:
                     self.model = BernoulliNB()
-                case types[2]:
+                case self.types[2]:
                     self.model = CatergoicalNB()
-                case types[3]:
+                case self.types[3]:
                     self.model = ComplementNB()
-                case types[4]:
+                case self.types[4]:
                     self.model = MultinominalNB()
         else:
             print("Invalid type value")
@@ -35,14 +36,3 @@ class myNB:
 
     def predict(self, testData):
         return self.model.predict(testData)
-"""
-train = Data("KDD_TRAIN", ['protocol_type', 'service', 'flag'])
-test = Data("KDD_TEST_PLUS", ['protocol_type', 'service', 'flag'])
-col_diffs = list(set(train.data.columns.values) - set(test.data.columns.values))
-train.data = train.data.drop(columns=col_diffs, axis=1)
-mlp = myMLP(80,10, 'logistic', 100)
-mlp.train(train.get_train_data(), train.get_label_data(True))
-y_pred = mlp.predict(test.get_train_data())
-print(accuracy_score(test.get_label_data(True), y_pred))
-"""
-

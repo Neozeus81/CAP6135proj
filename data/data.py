@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import pandas as pd 
+import numpy as np
 from scipy.io import arff
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.compose import ColumnTransformer
@@ -33,20 +34,32 @@ def map_binary(attack):
         value = 1
     return value
 
+def normalize(col):
+    return (1/(1+np.exp(-col)))
+
 class Data: 
     def __init__(self, name, columns):
+        # TODO normalize duration, src_bytes, dst_bytes
         load_dotenv("../.env")
         df = pd.read_csv(os.getenv(name))
         df.columns = col_names
         atype = df.attack.apply(map)
         btype = df.attack.apply(map_binary)
+        df['duration'] = normalize(df['duration'])
+        df['src_bytes'] = normalize(df['src_bytes'])
+        df['dst_bytes'] = normalize(df['dst_bytes'])
         df['atype'] = atype
         df['btype'] = btype
         encode = pd.get_dummies(df, columns=columns)
         self.data = encode
 
-    def get_train_data(self):
-        return self.data.drop(columns=['attack', 'level', 'atype', 'btype'], axis=1)
+
+    def get_train_data(self, columns):
+        if not columns:
+            return self.data.drop(columns=['attack', 'level', 'atype', 'btype'], axis=1)
+
+        temp = self.data.drop(columns=columns, axis=1)
+        return temp.drop(columns=['attack', 'level', 'atype', 'btype'], axis=1)
 
     def get_label_data(self, isBinary):
         if isBinary:
@@ -57,8 +70,11 @@ class Data:
     def print_data(self):
         print(self.data)
 
-    def get_accuracy():
-        return 1
+    def get_Eval(pred, ground):
+        return false
+
+        
+
 
 """ example usage
 myData = data("KDD_TRAIN", ['protocol_type', 'service', 'flag'])
