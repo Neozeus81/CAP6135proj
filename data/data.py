@@ -65,7 +65,7 @@ class Data:
         if isBinary:
             return self.data['btype']
         else:
-            return self.data['atype']
+            return pd.get_dummies(self.data['atype'])
 
     def print_data(self):
         print(self.data)

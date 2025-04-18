@@ -1,6 +1,6 @@
 import sys
 import os
-from sklearn.naive_bayes import GaussianNB, BernoulliNB, CatergoricalNB, ComplementNB, MultinominalNB
+from sklearn.naive_bayes import GaussianNB, BernoulliNB, CategoricalNB, ComplementNB, MultinomialNB
 from sklearn.metrics import accuracy_score
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -14,22 +14,19 @@ from data import Data
 types = ["GaussianNB", "BernoulliNB", "CatergoricalNB", "ComplementNB", "MultinomialNB"]
 
 class myNB:
-    def __init__(self, what_type):
-        self.types = ["GaussianNB", "BernoulliNB", "CatergoricalNB", "ComplementNB", "MultinomialNB"]
-        if what_type in self.types:
-            match what_type:
-                case self.types[0]:
-                    self.model = GaussianNB()
-                case self.types[1]:
-                    self.model = BernoulliNB()
-                case self.types[2]:
-                    self.model = CatergoicalNB()
-                case self.types[3]:
-                    self.model = ComplementNB()
-                case self.types[4]:
-                    self.model = MultinominalNB()
-        else:
-            print("Invalid type value")
+    def __init__(self, cur):
+        if cur == 0:
+            print("gaussian")
+            self.model = GaussianNB()
+        if cur == 1:
+            print("BernoulliNB")
+            self.model = BernoulliNB()
+        if cur == 3:
+            print("ComplementNB")
+            self.model = ComplementNB()
+        if cur == 4:
+            print("Multinominal")
+            self.model = MultinomialNB()
 
     def train(self, trainData, trainLabels):
         self.model.fit(trainData, trainLabels)
