@@ -58,9 +58,8 @@ class Data:
         if not columns:
             return self.data.drop(columns=['attack', 'level', 'atype', 'btype'], axis=1)
 
-        else:
-            temp = self.data.drop(columns=columns, axis=1)
-            return temp.drop(columns=['attack', 'level', 'atype', 'btype'], axis=1)
+        temp = self.data.drop(columns=columns, axis=1)
+        return temp.drop(columns=['attack', 'level', 'atype', 'btype'], axis=1)
 
     def get_label_data(self, isBinary):
         if isBinary:

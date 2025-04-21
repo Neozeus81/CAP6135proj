@@ -1,6 +1,6 @@
 import sys
 import os
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
@@ -10,9 +10,9 @@ sys.path.append(file_dir)
 
 from data import Data
 
-class myRFC:
-    def __init__(self, cur):
-        self.model = RandomForestClassifier(criterion=cur)
+class myTree:
+    def __init__(self):
+        self.model = DecisionTreeClassifier()
 
     def train(self, trainData, trainLabels):
         self.model.fit(trainData, trainLabels)

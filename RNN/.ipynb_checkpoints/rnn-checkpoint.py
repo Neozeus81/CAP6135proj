@@ -56,19 +56,18 @@ class CustomCallback(keras.callbacks.Callback):
         mes = message("RNN", self.dataset, "sigmoid", epoch, self.num_nodes, self.lr, self.isMulti, train_acc, test_acc, self.time)  
         self.conn.insert(mes.buildMsg())
 
-dbconn = myConnection('local', 'Term_proj', 'mongodb://localhost:27017')
+dbconn = myConnection('local', 'Term_proj', 'mongodb://cap.aflohr.com:27017')
 
 train = Data("KDD_TRAIN", ['protocol_type', 'service', 'flag']) 
-test = Data("KDD_TEST_PLUS", ['protocol_type', 'service', 'flag'])
+#test = Data("KDD_TEST_PLUS", ['protocol_type', 'service', 'flag'])
 test_minus = Data("KDD_TEST_MINUS", ['protocol_type', 'service', 'flag'])
-"""
 
 y_binary = train.get_label_data(True)
 y_binary_test = test_minus.get_label_data(True)
 y_multi = train.get_label_data(False)
 y_multi_test = test_minus.get_label_data(False)
-y_test_minus = test_minus.get_label_data(True)
-y_test_minus_multi = test_minus.get_label_data(False)
+#y_test_minus = test_minus.get_label_data(True)
+#y_test_minus_multi = test_minus.get_label_data(False)
 
 col_diffs = list(set(train.data.columns.values) - set(test_minus.data.columns.values))
 
@@ -78,67 +77,46 @@ x = x.reshape(x.shape[0], 1, x.shape[1])
 x_test = StandardScaler().fit_transform(test_minus.get_train_data([]))
 x_test = x_test.reshape(x_test.shape[0], 1, x_test.shape[1])
 
-col_diffs = list(set(train.data.columns.values) - set(test_minus.data.columns.values))
+"""col_diffs = list(set(train.data.columns.values) - set(test_minus.data.columns.values))
 
 x_test_minus = StandardScaler().fit_transform(test_minus.get_train_data([]))
 x_test_minus = x_test_minus.reshape(x_test_minus.shape[0], 1, x_test_minus.shape[1])
 """
-
 lrs = [.01, .1, .5, .8]
 nodes = [20, 60, 80, 120, 240]
-datasets = [test_minus]
-for test_dataset in datasets:
+for lr in lrs:
+    for num_nodes in nodes:
+        binary_model = keras.Sequential()
 
-    col_diffs = list(set(train.data.columns.values) - set(test_dataset.data.columns.values))
+        binary_model.add(layers.SimpleRNN(num_nodes, input_shape=(x.shape[1], x.shape[2]),activation='sigmoid', return_sequences=False))
 
-    x = StandardScaler().fit_transform(train.get_train_data(col_diffs))
-    x = x.reshape(x.shape[0], 1, x.shape[1])
-
-    x_test = StandardScaler().fit_transform(test_dataset.get_train_data([]))
-    x_test = x_test.reshape(x_test.shape[0], 1, x_test.shape[1])
+        binary_model.add(layers.Dense(1, activation='sigmoid'))
 
 
-    y_binary = train.get_label_data(True)
-    y_binary_test = test_dataset.get_label_data(True)
-    y_multi = train.get_label_data(False)
-    y_multi_test = test_dataset.get_label_data(False)
-    """
+        opt = keras.optimizers.Adam(learning_rate=lr)
+        binary_model.compile(loss=keras.losses.BinaryCrossentropy(from_logits=True), optimizer = opt)
 
-    for lr in lrs:
-        for num_nodes in nodes:
-            binary_model = keras.Sequential()
+        binary_model.summary()
 
-            binary_model.add(layers.SimpleRNN(num_nodes, input_shape=(x.shape[1], x.shape[2]),activation='sigmoid', return_sequences=False))
-
-            binary_model.add(layers.Dense(1, activation='sigmoid'))
+        cb = CustomCallback(x, x_test, y_binary.to_numpy(), y_binary_test.to_numpy(), False, "minus", lr, num_nodes, dbconn)
+        binary_model.fit(x, y_binary, epochs=100, callbacks=[cb])
 
 
-            opt = keras.optimizers.Adam(learning_rate=lr)
-            binary_model.compile(loss=keras.losses.BinaryCrossentropy(from_logits=True), optimizer = opt)
+for lr in lrs:
+    for num_nodes in nodes:
+        multi_model = keras.Sequential()
 
-            binary_model.summary()
+        multi_model.add(layers.SimpleRNN(num_nodes, input_shape=(x_test.shape[1], x_test.shape[2]),activation='sigmoid', return_sequences=False))
 
-            cb = CustomCallback(x, x_test, y_binary.to_numpy(), y_binary_test.to_numpy(), False, test_dataset.name, lr, num_nodes, dbconn)
-            binary_model.fit(x, y_binary, epochs=100, callbacks=[cb])
-"""
-
-    for lr in lrs:
-        for num_nodes in nodes:
-            multi_model = keras.Sequential()
-
-            multi_model.add(layers.SimpleRNN(num_nodes, input_shape=(x.shape[1], x.shape[2]),activation='sigmoid', return_sequences=False))
-
-            multi_model.add(layers.Dense(5, activation='softmax'))
+        multi_model.add(layers.Dense(5, activation='softmax'))
 
 
-            opt = keras.optimizers.Adam(learning_rate=lr)
-            multi_model.compile(loss=keras.losses.CategoricalCrossentropy(from_logits=True), optimizer = opt)
+        opt = keras.optimizers.Adam(learning_rate=lr)
+        multi_model.compile(loss=keras.losses.CategoricalCrossentropy(from_logits=True), optimizer = opt)
 
-            multi_model.summary()
-            print(y_multi)
-            print(y_multi_test)
+        multi_model.summary()
 
-            cb = CustomCallback(x, x_test, np.argmax(y_multi,axis=1), np.argmax(y_multi_test, axis=1), True, test_dataset.name, lr, num_nodes, dbconn)
-            multi_model.fit(x, y_multi, epochs=100, callbacks=[cb])
+        cb = CustomCallback(x, x_test, np.argmax(y_multi,axis=1), np.argmax(y_multi_test, axis=1), True, "minus", lr, num_nodes, dbconn)
+        multi_model.fit(x, y_multi, epochs=100, callbacks=[cb])
 
 
