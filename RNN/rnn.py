@@ -4,8 +4,7 @@ import time
 from dataset import Dataset
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import classification_report
-
+from sklearn.metrics import classification_report,  confusion_matrix
 
 import numpy as np
 import pandas as pd
@@ -20,6 +19,14 @@ sys.path.append(file_dir)
 
 from data import Data
 from mongoInterface import myConnection, message
+def predict(self, x, y):
+    y_pred = np.argmax(self.model.predict(x), axis=1)
+    print(accuracy_score(y,y_pred))
+    return y_pred
+
+def getConfusionMatrix(self, x, y_labels):
+    y_pred = self.predict(x, y_labels)
+    return confusion_matrix(y_labels, y_pred)
 
 class CustomCallback(keras.callbacks.Callback):
     def __init__(self, x, x_test, y_train, y_test, isMulti, dataset, lr, nodes, mongoConn):
@@ -53,8 +60,12 @@ class CustomCallback(keras.callbacks.Callback):
             train_acc = classification_report(self.y_train, x_pred, output_dict = True).get("accuracy")
             x_pred_test = np.argmax(self.model.predict(x_test), axis=1)
             test_acc = classification_report(self.y_test, x_pred_test, output_dict = True).get("accuracy")
+
+        print(confusion_matrix(self.y_test, x_pred_test))
+
         mes = message("RNN", self.dataset, "sigmoid", epoch, self.num_nodes, self.lr, self.isMulti, train_acc, test_acc, self.time)  
-        self.conn.insert(mes.buildMsg())
+
+        self.conn.insert(mes.sendCM(confusion_matrix(self.y_test, x_pred_test)))
 
 dbconn = myConnection('local', 'Term_proj', 'mongodb://localhost:27017')
 
@@ -84,6 +95,7 @@ x_test_minus = StandardScaler().fit_transform(test_minus.get_train_data([]))
 x_test_minus = x_test_minus.reshape(x_test_minus.shape[0], 1, x_test_minus.shape[1])
 """
 
+
 lrs = [.01, .1, .5, .8]
 nodes = [20, 60, 80, 120, 240]
 datasets = [test_minus]
@@ -102,7 +114,6 @@ for test_dataset in datasets:
     y_binary_test = test_dataset.get_label_data(True)
     y_multi = train.get_label_data(False)
     y_multi_test = test_dataset.get_label_data(False)
-    """
 
     for lr in lrs:
         for num_nodes in nodes:
@@ -120,7 +131,6 @@ for test_dataset in datasets:
 
             cb = CustomCallback(x, x_test, y_binary.to_numpy(), y_binary_test.to_numpy(), False, test_dataset.name, lr, num_nodes, dbconn)
             binary_model.fit(x, y_binary, epochs=100, callbacks=[cb])
-"""
 
     for lr in lrs:
         for num_nodes in nodes:

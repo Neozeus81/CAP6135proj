@@ -41,9 +41,9 @@ for test_dataset in datasets:
             # binary classification
             mlp.train(train.get_train_data(col_diffs), train.get_label_data(True))
             b_train_pred = mlp.predict(train.get_train_data(col_diffs)) 
-            b_train_acc = accuracy_score(b_train_pred, train.get_label_data(True))
+            b_train_acc = accuracy_score(train.get_label_data(True), b_train_pred)
             b_test_pred = mlp.predict(test_dataset.get_train_data([]))
-            b_test_acc = accuracy_score(b_test_pred, test_dataset.get_label_data(True))
+            b_test_acc = accuracy_score(test_dataset.get_label_data(True), b_test_pred)
             msg = message("mlp", test_dataset.name, 'logistic', 100, node, lr, False, b_train_acc, b_test_acc, 0)
             dbconn.insert(msg.buildMsg())
 
@@ -56,7 +56,7 @@ for test_dataset in datasets:
 
             msg = message("mlp", test_dataset.name, 'logistic', 100, node, lr, True, m_train_acc, m_test_acc, 0)
             dbconn.insert(msg.buildMsg())
-
+"""
 types = ["GaussianNB", "BernoulliNB", "CatergoricalNB", "ComplementNB", "MultinomialNB"]
 
 print("NB")
@@ -165,4 +165,4 @@ for test_dataset in datasets:
     print("Multi classification train:", m_train_acc, "test " , m_test_acc)
     msg = message("tree", test_dataset.name, "N/A", 0, "N/A", "N/A", True, m_train_acc, m_test_acc, 0)
     dbconn.insert(msg.buildMsg())
-
+    """

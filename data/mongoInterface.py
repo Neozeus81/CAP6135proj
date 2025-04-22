@@ -47,3 +47,20 @@ class message:
         }
         print(json.dumps(message))
         return message
+    def sendCM(self, cm):
+        message = {
+            "model" : self.model,
+            "dataset" : self.dataset,
+            "act_func": self.act_func,
+            "epochs" : self.epochs,
+            "num_nodes" : self.num_nodes,
+            "lr" : self.lr,
+            "isMulti" : self.isBinary,
+            "train_acc" : self.train_acc,
+            "test_acc" : self.test_acc,
+            "train_time" : self.train_time,
+            "Confusion" : json.dumps(cm.tolist()), 
+            "timestamp" : datetime.datetime.now().timestamp()
+        }
+        print(json.dumps(message))
+        return message
