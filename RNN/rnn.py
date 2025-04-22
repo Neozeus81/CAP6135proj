@@ -72,33 +72,10 @@ dbconn = myConnection('local', 'Term_proj', 'mongodb://localhost:27017')
 train = Data("KDD_TRAIN", ['protocol_type', 'service', 'flag']) 
 test = Data("KDD_TEST_PLUS", ['protocol_type', 'service', 'flag'])
 test_minus = Data("KDD_TEST_MINUS", ['protocol_type', 'service', 'flag'])
-"""
-
-y_binary = train.get_label_data(True)
-y_binary_test = test_minus.get_label_data(True)
-y_multi = train.get_label_data(False)
-y_multi_test = test_minus.get_label_data(False)
-y_test_minus = test_minus.get_label_data(True)
-y_test_minus_multi = test_minus.get_label_data(False)
-
-col_diffs = list(set(train.data.columns.values) - set(test_minus.data.columns.values))
-
-x = StandardScaler().fit_transform(train.get_train_data(col_diffs))
-x = x.reshape(x.shape[0], 1, x.shape[1])
-
-x_test = StandardScaler().fit_transform(test_minus.get_train_data([]))
-x_test = x_test.reshape(x_test.shape[0], 1, x_test.shape[1])
-
-col_diffs = list(set(train.data.columns.values) - set(test_minus.data.columns.values))
-
-x_test_minus = StandardScaler().fit_transform(test_minus.get_train_data([]))
-x_test_minus = x_test_minus.reshape(x_test_minus.shape[0], 1, x_test_minus.shape[1])
-"""
-
 
 lrs = [.01, .1, .5, .8]
 nodes = [20, 60, 80, 120, 240]
-datasets = [test_minus]
+datasets = [test]
 for test_dataset in datasets:
 
     col_diffs = list(set(train.data.columns.values) - set(test_dataset.data.columns.values))
@@ -112,9 +89,9 @@ for test_dataset in datasets:
 
     y_binary = train.get_label_data(True)
     y_binary_test = test_dataset.get_label_data(True)
-    y_multi = train.get_label_data(False)
-    y_multi_test = test_dataset.get_label_data(False)
-
+    y_multi = pd.get_dummies(train.get_label_data(False))
+    y_multi_test = pd.get_dummies(test_dataset.get_label_data(False))
+    
     for lr in lrs:
         for num_nodes in nodes:
             binary_model = keras.Sequential()
@@ -131,7 +108,7 @@ for test_dataset in datasets:
 
             cb = CustomCallback(x, x_test, y_binary.to_numpy(), y_binary_test.to_numpy(), False, test_dataset.name, lr, num_nodes, dbconn)
             binary_model.fit(x, y_binary, epochs=100, callbacks=[cb])
-
+    
     for lr in lrs:
         for num_nodes in nodes:
             multi_model = keras.Sequential()
@@ -147,7 +124,7 @@ for test_dataset in datasets:
             multi_model.summary()
             print(y_multi)
             print(y_multi_test)
-
+            print(y_multi.shape)
             cb = CustomCallback(x, x_test, np.argmax(y_multi,axis=1), np.argmax(y_multi_test, axis=1), True, test_dataset.name, lr, num_nodes, dbconn)
             multi_model.fit(x, y_multi, epochs=100, callbacks=[cb])
 
